@@ -57,7 +57,7 @@ def get_by_code(code, output, display, **kwargs):
 
 
 def process_area(area, output_path, display):
-    geojson = area.to_geojson_poly()
+    geojson = area.to_geojson()
 
     file_name = code_to_filename(area.file_name)
 

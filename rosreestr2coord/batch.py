@@ -27,7 +27,7 @@ def batch_parser(
             sleep(need_sleep)
             area = Area(code, with_log=with_log, **kwargs)
             need_sleep = delay
-            if len(area.get_coord()):
+            if area.feature:
                 print(" - ok", end="")
                 success += 1
             else:

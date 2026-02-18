@@ -18,12 +18,11 @@ def make_output(output, file_name, file_format, out_path=""):
 
 def _write_csv_row(f, area, header=False):
     try:
-        xy = copy.deepcopy(list(area.get_coord()))
-        for geom in xy:
-            for poly in geom:
-                for c in range(len(poly)):
-                    poly[c] = poly[c][::-1]
-        attrs = getattr(area, "attrs", {})
+        if not area.feature:
+            return
+        geometry = area.feature.get("geometry", {})
+        xy = copy.deepcopy(geometry.get("coordinates", []))
+        attrs = area.feature.get("properties", {})
         address = attrs.get("address", "")
         cols = [
             {"name": "code", "value": getattr(area, "code")},
@@ -64,7 +63,7 @@ def batch_json_output(output, areas, file_name, with_attrs=True, crs_name="EPSG:
     }
     path = make_output(output, file_name, "geojson")
     for a in areas:
-        feature = a.to_geojson_poly(with_attrs, dumps=False)
+        feature = a.to_geojson(dumps=False)
         if feature:
             features.append(feature)
 
@@ -74,8 +73,8 @@ def batch_json_output(output, areas, file_name, with_attrs=True, crs_name="EPSG:
     return path
 
 
-def area_json_output(output, area, with_attrs=True):
-    geojson = area.to_geojson_poly(with_attrs)
+def area_json_output(output, area):
+    geojson = area.to_geojson()
     if geojson:
         f = open(make_output(output, area.file_name, "geojson"), "w")
         f.write(geojson)

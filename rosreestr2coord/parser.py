@@ -9,7 +9,7 @@ from .export import coords2kml
 from .logger import logger
 from .request.proxy_handling import ProxyHandling
 from .request.request import make_request
-from .utils import clear_code, code_to_filename, transform_to_wgs
+from .utils import clear_code, code_to_filename, transform_to_wgs, validate_code
 
 TYPES = {
     "Объекты недвижимости": 1,
@@ -53,6 +53,9 @@ class Area:
         self.proxy_handler: Optional[ProxyHandling] = proxy_handler
         self.proxy_url: Optional[str] = proxy_url
         self.logger: logging.Logger = logger or logging.getLogger(__name__)
+
+        if self.code:
+            validate_code(self.code)
 
         self.file_name: str = code_to_filename(self.code)
         self.feature: Optional[dict] = None

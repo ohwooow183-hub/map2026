@@ -34,6 +34,30 @@ def transform_to_wgs(geojson: dict) -> dict:
     return result
 
 
+
+def validate_code(code: str) -> None:
+    """
+    Validate cadastral number format.
+
+    Accepted formats:
+        - Full:     XX:XX:XXXXXXX:XXXX  (parcel / building)
+        - Quarter:  XX:XX:XXXXXXX
+        - District: XX:XX
+        - Region:   XX
+
+    Raises ValueError if the format is invalid.
+    """
+    if not code or not isinstance(code, str):
+        raise ValueError(f"Cadastral code must be a non-empty string, got: {code!r}")
+
+    code = code.strip()
+    pattern = r"^\d{1,2}(:\d{1,2}(:\d{5,7}(:\d+)?)?)?$"
+    if not re.match(pattern, code):
+        raise ValueError(
+            f"Invalid cadastral code format: '{code}'. "
+            f"Expected format: XX:XX:XXXXXXX:XXXX (e.g. 50:20:0010203:456)"
+        )
+
 def clear_code(code: str) -> str:
     """
     Remove first nulls from code xxxx:00xx >> xxxx:xx

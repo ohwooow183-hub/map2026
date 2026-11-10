@@ -1,7 +1,13 @@
 from typing import Dict, Optional, Union
 
 from .base_adapter import RequestAdapter
-from .exceptions import HTTPBadRequestException, HTTPErrorException, TimeoutException
+from .exceptions import (
+    HTTPBadRequestException,
+    HTTPErrorException,
+    HTTPForbiddenException,
+    TimeoutException,
+    TooManyRequestsException,
+)
 from .proxy_handling import ProxyHandling
 from .urlib_adapter import UrllibAdapter
 
@@ -53,16 +59,16 @@ def make_request_with_specified_proxy(
     for attempt in range(1, tries + 1):
         try:
             return adapter.perform_request(url, proxy, logger, timeout, headers, method, body)
-        except HTTPBadRequestException as er:
-            # Specific error; do not retry
+        except (HTTPBadRequestException, HTTPForbiddenException, TooManyRequestsException) as er:
+            # The service has answered and refused; repeating the same request at once will not help
             if logger:
-                logger.error(f"HTTP 400 Bad Request: {er}")
+                logger.error(f"Request refused: {er}")
             raise
         except (HTTPErrorException, Exception) as er:
             if logger:
                 logger.error(f"Attempt {attempt} failed: {er}")
             if attempt == tries:
-                raise TimeoutException(f"Failed to make request after {tries} attempts") from er
+                raise TimeoutException(f"Failed to make request after {tries} attempts: {er}") from er
             else:
                 if logger:
                     logger.debug(f"Retrying... (Attempt {attempt + 1} of {tries})")

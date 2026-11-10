@@ -6,8 +6,9 @@ from .exceptions import (
     HTTPErrorException,
     HTTPForbiddenException,
     RequestException,
+    TooManyRequestsException,
 )
-from .helpers import get_rosreestr_headers, is_error_response
+from .helpers import error_code, get_rosreestr_headers, is_error_response
 
 
 class RequestAdapter(ABC):
@@ -41,6 +42,11 @@ class RequestAdapter(ABC):
             response = self._make_request(url, proxy, timeout, headers, method, body)
             is_error = is_error_response(url, response)
             if is_error:
+                code = error_code(response)
+                if code == 403:
+                    raise HTTPForbiddenException(f"HTTP 403 Forbidden: {is_error}")
+                if code == 429:
+                    raise TooManyRequestsException(f"HTTP 429 Too Many Requests: {is_error}", code=429)
                 raise RequestException(is_error)
             return response
         except self.get_specific_http_error() as er:
@@ -57,6 +63,9 @@ class RequestAdapter(ABC):
     def handle_exception(self, er: Exception, logger: Optional[object]) -> None:
         if logger:
             logger.error(f"Request failed: {er}")
+        if isinstance(er, RequestException):
+            # keep the specific type (timeout / forbidden / too many requests ...) for the caller
+            raise er
         raise RequestException(er)
 
     @abstractmethod

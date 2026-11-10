@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Union
+from typing import Any, Dict, Union
 
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
@@ -8,17 +8,39 @@ USER_AGENT = (
 REFERER = "https://nspd.gov.ru/map?thematic=PKK"
 
 
-def is_error_response(url: str, response: bytes) -> Union[bool, str]:
-    is_error = False
-    try:
-        data = json.loads(response)
-        error = data.get("error")
-        if error:
-            message = error.get("message")
-            is_error = message if message else "error"
-    except Exception:
-        pass
-    return is_error
+def error_code(response: Any) -> Union[int, None]:
+    """Numeric code of an NSPD error document (`{"code": 403, "message": "Forbidden", "requestId": "..."}`)."""
+    if isinstance(response, dict) and "data" not in response and "features" not in response:
+        try:
+            return int(response.get("code"))
+        except (TypeError, ValueError):
+            return None
+    return None
+
+
+def is_error_response(url: str, response: Any) -> Union[bool, str]:
+    """
+    Returns an error message if the answer of the service describes an error, otherwise False.
+    Accepts both a raw body and an already decoded JSON document.
+    """
+    data = response
+    if isinstance(response, (bytes, str)):
+        try:
+            data = json.loads(response)
+        except Exception:
+            return False
+    if not isinstance(data, dict):
+        return False
+
+    error = data.get("error")
+    if error:
+        message = error.get("message") if isinstance(error, dict) else str(error)
+        return message if message else "error"
+
+    code = error_code(data)
+    if code is not None and code != 404 and code >= 400:
+        return "%s (code %s)" % (data.get("message") or "error", code)
+    return False
 
 
 def get_rosreestr_headers() -> Dict[str, str]:

@@ -1,5 +1,5 @@
 tmp/
-.vscode/
+
 *.pyc
 __pycache__
 .DS_Store
@@ -28,3 +28,4 @@ proxy.txt
 .coverage
 .tox/
 poetry.lock
+pip-wheel-metadata

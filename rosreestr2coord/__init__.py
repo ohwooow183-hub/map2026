@@ -1,5 +1,3 @@
-from rosreestr2coord.parser import Area
+from .parser import Area
 
-__all__ = (
-    "Area",
-)
+__all__ = ("Area",)

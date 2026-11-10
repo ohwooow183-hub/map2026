@@ -1,47 +1,73 @@
-[tool.poetry]
+[project]
 name = "rosreestr2coord"
-version = "4.0.4"
-license = "MIT"
-description = "Get geojson with coordinates of area by cadastral number."
-authors = ["Artemiy Doroshkov <rendrom@gmail.com>"]
-readme = 'README.md'
-repository = "https://github.com/rendrom/rosreestr2coord"
-homepage = "https://github.com/rendrom/rosreestr2coord"
+version = "5.3.3"
+description = "Get geometry from rosreestr"
+authors = [{ name = "Artemiy Doroshkov", email = "rendrom@gmail.com" }]
+dependencies = ["requests"]
+license = { file = "LICENSE.md" }
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+]
+urls = { "Homepage" = "https://github.com/rendrom/rosreestr2coord" }
+readme = "README.md"
 
-[tool.poetry.dependencies]
-python = "^3.6"
-numpy = "^1.17"
-opencv-python = "^4.0"
-Pillow = "^7.0"
-matplotlib = "^3.2"
+[project.scripts]
+rosreestr2coord = "rosreestr2coord.console:console"
 
-[tool.poetry.dev-dependencies]
-pytest = '^5.0'
-pytest-cov = '^2.4'
-tox = '^3.4'
-mypy = '*'
-flake8 = '*'
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "tox",
+    "requests-mock",
+    "build",
+    "twine",
+]
 
-[tool.poetry.scripts]
-rosreestr2coord = 'scripts.console:main'
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["setuptools", "wheel", "twine"]
+build-backend = "setuptools.build_meta"
 
-[mypy]
-ignore_missing_imports = true
-show_error_context = true
-disallow_untyped_calls = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_subclassing_any = false
-warn_no_return = true
-strict_optional = true
-no_implicit_optional = true
-disallow_any_generics = true
-disallow_any_unimported = false
-warn_redundant_casts = true
-warn_unused_configs = true
-show_traceback = true
-always_false = 'MYPYC'
+[tool.setuptools]
+packages = ["rosreestr2coord", "rosreestr2coord.request"]
+include-package-data = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-select = ["I", "E", "F", "W"]
+src = ["rosreestr2coord", "tests"]
+exclude = ["__pycache__", "build", "dist"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --tb=short"
+testpaths = ["tests"]
+markers = [
+    "integration: mark test as integration (requires internet)",
+    "unit: mark test as unit (fast, local)",
+]
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py38, py39, py310, py311
+
+[testenv]
+deps =
+    pytest
+    pytest-cov
+commands =
+    pytest --cov=rosreestr2coord --cov-report=term-missing
+"""
+
+
+# https://pypi.python.org/pypi/twine
+
+# pip install build twine
+# python -m build
+# twine upload dist/*
+# twine upload -u 'rendrom' --repository-url https://upload.pypi.org/legacy/ dist/*

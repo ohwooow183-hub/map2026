@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="rosreestr2coord">
+<title>{{TITLE}}</title>
+<style>{{LEAFLET_CSS}}</style>
+<style>
+:root {
+  --ok: #1a7f37; --warn: #9a6700; --bad: #cf222e; --muted: #57606a;
+  --line: #d8dee4; --bg: #ffffff; --bg2: #f6f8fa; --text: #1f2328; --accent: #0969da;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: var(--text); background: var(--bg); }
+button { font: inherit; color: inherit; }
+#app { display: flex; height: 100%; }
+#sidebar { width: 350px; flex: none; display: flex; flex-direction: column; border-right: 1px solid var(--line); background: var(--bg); min-height: 0; }
+#map { flex: 1; min-width: 0; background: #e8ecef; }
+#head { padding: 14px 16px 10px; border-bottom: 1px solid var(--line); }
+#head h1 { font-size: 17px; line-height: 1.25; margin: 0 0 2px; overflow-wrap: anywhere; }
+#head .sub { color: var(--muted); font-size: 12px; }
+#note { margin: 10px 0 0; padding: 8px 10px; border: 1px solid #d4a72c; background: #fff8c5; border-radius: 6px; font-size: 13px; overflow-wrap: anywhere; }
+#chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.chip { border: 1px solid var(--line); background: var(--bg2); border-radius: 999px; padding: 2px 10px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+.chip b { font-weight: 600; }
+.chip:hover { border-color: #afb8c1; }
+.chip[aria-pressed="true"] { background: var(--text); border-color: var(--text); color: #fff; }
+.chip.ok b { color: var(--ok); } .chip.warn b { color: var(--warn); } .chip.bad b { color: var(--bad); }
+.chip[aria-pressed="true"] b { color: inherit; }
+#total { margin-top: 8px; font-size: 12px; color: var(--muted); }
+#groups { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; }
+#groups button { border: 0; background: none; padding: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+#groups button:hover { text-decoration: underline; }
+.swatch { width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(0, 0, 0, .55); flex: none; display: inline-block; }
+#tools { padding: 8px 16px; border-bottom: 1px solid var(--line); display: flex; gap: 8px; }
+#filter { flex: 1; min-width: 0; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; font: inherit; }
+#filter:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+#fit { border: 1px solid var(--line); background: var(--bg2); border-radius: 6px; padding: 5px 10px; cursor: pointer; white-space: nowrap; }
+#fit:hover { border-color: #afb8c1; }
+#list { list-style: none; margin: 0; padding: 0; overflow-y: auto; flex: 1; min-height: 0; }
+#list li { border-bottom: 1px solid #eaeef2; }
+#list button { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 0 6px; width: 100%; text-align: left; border: 0; background: none; padding: 6px 16px 6px 10px; cursor: pointer; }
+#list button:hover, #list li.hover button { background: var(--bg2); }
+#list li.active button { background: #ddf4ff; }
+#list li.nogeo button { cursor: default; }
+.num { color: var(--muted); font-size: 12px; text-align: right; padding-top: 2px; font-variant-numeric: tabular-nums; }
+.row1 { display: flex; align-items: center; gap: 6px; }
+.code { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.size { margin-left: auto; color: var(--muted); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.badge { font-size: 11px; border-radius: 999px; padding: 0 7px; border: 1px solid currentColor; white-space: nowrap; }
+.badge.warn { color: var(--warn); } .badge.bad { color: var(--bad); } .badge.muted { color: var(--muted); } .badge.ok { color: var(--ok); }
+.meta { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.msg { color: var(--bad); font-size: 12px; overflow-wrap: anywhere; }
+.msg.soft { color: var(--muted); }
+li.nogeo .code { color: var(--muted); }
+#empty { padding: 16px; color: var(--muted); display: none; }
+#foot { padding: 8px 16px; border-top: 1px solid var(--line); font-size: 11px; color: var(--muted); }
+#toast { position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 1200; max-width: min(560px, 90%); background: rgba(31, 35, 40, .92); color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 13px; display: none; }
+#nodata { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 1100; max-width: min(460px, 86%); background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; box-shadow: 0 6px 24px rgba(0, 0, 0, .18); display: none; }
+#nodata h2 { margin: 0 0 6px; font-size: 16px; }
+#mapwrap { position: relative; flex: 1; min-width: 0; display: flex; }
+.r2c-label { width: 0 !important; height: 0 !important; margin: 0 !important; border: 0; background: none; pointer-events: none; }
+.r2c-label span { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font: 600 12px/1 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #fff; text-shadow: 0 0 2px #000, 0 0 2px #000, 0 0 3px #000, 0 0 4px #000; font-variant-numeric: tabular-nums; }
+.r2c-label.hidden span { display: none; }
+.r2c-label.below span { transform: translate(-50%, 11px); }
+.r2c-label.minor span { font-weight: 500; opacity: .92; }
+.r2c-popup h3 { margin: 0 20px 2px 0; font-size: 15px; }
+.r2c-popup .sub { color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+.r2c-popup table { border-collapse: collapse; width: 100%; font-size: 12px; }
+.r2c-popup th { text-align: left; font-weight: 400; color: var(--muted); padding: 2px 8px 2px 0; vertical-align: top; width: 42%; }
+.r2c-popup td { padding: 2px 0; vertical-align: top; overflow-wrap: anywhere; }
+.r2c-popup tr.sep th, .r2c-popup tr.sep td { border-top: 1px solid var(--line); padding-top: 5px; }
+.r2c-popup .links { margin-top: 8px; font-size: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
+.r2c-popup .warnbox { margin: 6px 0; padding: 5px 8px; background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; font-size: 12px; }
+.r2c-popup .when { margin-top: 6px; font-size: 11px; color: var(--muted); }
+.leaflet-popup-content { margin: 12px 14px; max-height: 60vh; overflow-y: auto; }
+.leaflet-container { font: inherit; }
+@media (max-width: 760px) {
+  /* a phone: the map on top, everything else scrolls below it as one column */
+  #app { flex-direction: column; }
+  #mapwrap { order: 1; flex: none; height: 55%; }
+  #sidebar { order: 2; width: auto; flex: 1; border-right: 0; border-top: 1px solid var(--line); display: block; overflow-y: auto; }
+  #list { overflow: visible; }
+}
+@media print {
+  #sidebar { display: none; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <div id="head">
+      <h1 id="title"></h1>
+      <div class="sub" id="subtitle"></div>
+      <div id="note" hidden></div>
+      <div id="chips"></div>
+      <div id="total"></div>
+      <div id="groups"></div>
+    </div>
+    <div id="tools">
+      <input id="filter" type="search" placeholder="Filter by number or address" aria-label="Filter the list">
+      <button id="fit" type="button" title="Zoom the map to all listed objects">Show all</button>
+    </div>
+    <ol id="list"></ol>
+    <div id="empty">Nothing matches the filter.</div>
+    <div id="foot">Boundaries as published by the NSPD geoportal (nspd.gov.ru). For reference only: this is not an official extract from the register.</div>
+  </aside>
+  <div id="mapwrap">
+    <div id="map"></div>
+    <div id="toast" role="status"></div>
+    <div id="nodata"><h2>No boundaries to show</h2><div id="nodata-text"></div></div>
+  </div>
+</div>
+<script type="application/json" id="r2c-data">{{DATA}}</script>
+<script>{{LEAFLET_JS}}</script>
+<script>
+(function () {
+  'use strict';
+  var DATA = JSON.parse(document.getElementById('r2c-data').textContent);
+  var items = DATA.items;
+  var STATUS = {
+    ok: {cls: 'ok', one: 'with boundaries', badge: ''},
+    no_bounds: {cls: 'warn', one: 'without boundaries', badge: 'no boundaries'},
+    not_found: {cls: 'bad', one: 'not found', badge: 'not found'},
+    error: {cls: 'bad', one: 'request failed', badge: 'request failed'},
+    skipped: {cls: 'muted', one: 'not requested', badge: 'not requested'}
+  };
+  var MAX_ZOOM = 21;
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = text;
+    return node;
+  }
+  function fmtNumber(value, digits) {
+    return Number(value).toLocaleString('en-US', {maximumFractionDigits: digits === undefined ? 0 : digits}).replace(/,/g, '\u202f');
+  }
+  function fmtArea(m2) {
+    if (m2 === null || m2 === undefined) return '';
+    if (m2 >= 10000) return fmtNumber(m2 / 10000, 2) + ' ha';
+    return fmtNumber(m2, m2 < 100 ? 1 : 0) + ' m²';
+  }
+  function fmtLength(m) {
+    return m >= 1000 ? fmtNumber(m / 1000, 2) + ' km' : fmtNumber(m) + ' m';
+  }
+  function fmtDate(seconds) {
+    if (!seconds) return '';
+    var d = new Date(seconds * 1000);
+    function p(n) { return (n < 10 ? '0' : '') + n; }
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+
+  // ---------------------------------------------------------------- map
+  var map = L.map('map', {maxZoom: MAX_ZOOM});
+  map.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>');
+  L.control.scale({imperial: false, maxWidth: 160}).addTo(map);
+  map.createPane('r2c-casing').style.zIndex = 390;
+  map.getPane('r2c-casing').style.pointerEvents = 'none';
+
+  var toastTimer = null;
+  function toast(text, ms) {
+    var node = document.getElementById('toast');
+    node.textContent = text;
+    node.style.display = 'block';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { node.style.display = 'none'; }, ms || 9000);
+  }
+
+  // Background maps. If the tiles of one provider can not be loaded at all, the next one is tried.
+  var baseLayers = {}, baseOrder = [];
+  var blank = L.layerGroup();
+  (DATA.basemaps || []).forEach(function (b) {
+    var layer = L.tileLayer(b.url, {
+      attribution: b.attribution || '', maxZoom: MAX_ZOOM, maxNativeZoom: b.maxNativeZoom || 19,
+      subdomains: b.subdomains || 'abc'
+    });
+    layer.r2cName = b.name;
+    baseLayers[b.name] = layer;
+    baseOrder.push(layer);
+  });
+  baseLayers['No background'] = blank;
+  baseOrder.forEach(function (layer, i) {
+    var loaded = 0, failed = 0, gaveUp = false;
+    layer.on('tileload', function () { loaded++; });
+    layer.on('tileerror', function () {
+      failed++;
+      if (gaveUp || loaded > 0 || failed < 3 || !map.hasLayer(layer)) return;
+      gaveUp = true;
+      map.removeLayer(layer);
+      var next = baseOrder[i + 1];
+      if (next) {
+        next.addTo(map);
+        toast('The background "' + layer.r2cName + '" could not be loaded, switched to "' + next.r2cName + '".');
+      } else {
+        blank.addTo(map);
+        toast('Background map tiles could not be loaded (no internet connection, or the tile servers refuse the request). The boundaries are not affected and are shown without a background.', 15000);
+      }
+    });
+  });
+  (baseOrder[0] || blank).addTo(map);
+
+  // ---------------------------------------------------------------- objects
+  var casingLayer = L.featureGroup().addTo(map);
+  var objectLayer = L.featureGroup().addTo(map);
+  var labelLayer = L.layerGroup().addTo(map);
+  var selected = null;
+
+  function styleOf(item, strong) {
+    return {color: item.color, weight: strong ? 4 : 2.5, opacity: 1, fillColor: item.color, fillOpacity: strong ? 0.5 : 0.22};
+  }
+  function setStrong(item, strong) {
+    if (!item.layer) return;
+    if (item.status === 'ok') item.layer.setStyle(styleOf(item, strong));
+    else item.layer.setStyle({weight: strong ? 4 : 2.5, fillOpacity: strong ? 0.9 : 0.6});
+    if (strong && item.layer.bringToFront) item.layer.bringToFront();
+  }
+  function boundsOf(item) {
+    if (item.status === 'ok') return item.layer.getBounds();
+    return L.latLng(item.center[0], item.center[1]).toBounds(300);
+  }
+
+  function linkRow(item) {
+    var lat = item.center[0].toFixed(6), lon = item.center[1].toFixed(6);
+    var box = el('div', 'links');
+    [
+      ['Google Maps', 'https://www.google.com/maps/search/?api=1&query=' + lat + ',' + lon],
+      ['Yandex Maps', 'https://yandex.ru/maps/?pt=' + lon + ',' + lat + '&z=17&l=sat'],
+      ['OpenStreetMap', 'https://www.openstreetmap.org/?mlat=' + lat + '&mlon=' + lon + '#map=17/' + lat + '/' + lon]
+    ].forEach(function (pair) {
+      var a = el('a', null, pair[0]);
+      a.href = pair[1]; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      box.appendChild(a);
+    });
+    return box;
+  }
+  function popupOf(item) {
+    var box = el('div', 'r2c-popup');
+    box.appendChild(el('h3', null, item.code));
+    var sub = [item.info.kind || item.info.category, item.info.subtype].filter(Boolean).join(' · ');
+    if (sub) box.appendChild(el('div', 'sub', sub));
+    if (item.status === 'no_bounds') {
+      box.appendChild(el('div', 'warnbox', 'The register has no boundaries for this object. The marker only shows the approximate place the service returned for it.'));
+    }
+    var table = el('table');
+    function row(label, value, cls) {
+      var tr = el('tr', cls);
+      tr.appendChild(el('th', null, label));
+      tr.appendChild(el('td', null, value));
+      table.appendChild(tr);
+      return tr;
+    }
+    (item.rows || []).forEach(function (r) { row(r[0], r[1]); });
+    var first = true;
+    function extra(label, value) { row(label, value, first ? 'sep' : ''); first = false; }
+    if (item.area_outline) {
+      var text = fmtArea(item.area_outline) + (item.area_outline >= 10000 ? ' (' + fmtNumber(item.area_outline) + ' m²)' : '');
+      if (item.info.area) {
+        var diff = (item.area_outline / item.info.area - 1) * 100;
+        text += ', ' + (diff >= 0 ? '+' : '−') + Math.abs(diff).toFixed(Math.abs(diff) < 10 ? 1 : 0) + '% vs register';
+      }
+      extra('Area of the outline', text);
+    }
+    if (item.length) extra('Length of the line', fmtLength(item.length));
+    if (item.parts > 1) extra(item.kind === 'line' ? 'Parts' : 'Contours', String(item.parts));
+    if (item.center) extra('Centre (lat, lon)', item.center[0].toFixed(6) + ', ' + item.center[1].toFixed(6));
+    box.appendChild(table);
+    if (item.center) box.appendChild(linkRow(item));
+    if (item.retrieved) {
+      box.appendChild(el('div', 'when', (item.cached ? 'Loaded from a file saved on ' : 'Retrieved from NSPD on ') + fmtDate(item.retrieved)));
+    }
+    return box;
+  }
+
+  items.forEach(function (item, i) {
+    item.index = i;
+    item.search = [item.code, item.info.address, item.info.use, item.info.kind, item.info.category, item.message].join(' ').toLowerCase();
+    if (!item.geometry || !item.center) return;
+    if (item.status === 'ok') {
+      item.casing = L.geoJSON(item.geometry, {pane: 'r2c-casing', interactive: false, style: {color: '#000', weight: 5.5, opacity: 0.55, fill: false}});
+      item.layer = L.geoJSON(item.geometry, {style: styleOf(item, false)});
+    } else {
+      item.layer = L.circleMarker([item.center[0], item.center[1]], {radius: 8, color: '#000', weight: 2.5, opacity: 0.9, dashArray: '3 4', fillColor: item.color, fillOpacity: 0.6});
+    }
+    item.layer.bindPopup(function () { return popupOf(item); }, {maxWidth: 380, minWidth: 250, autoPanPadding: [30, 30]});
+    item.layer.bindTooltip(item.code + (item.info.area ? ' · ' + fmtArea(item.info.area) : ''), {sticky: true, direction: 'top', opacity: 0.95});
+    item.layer.on('mouseover', function () { hover(item, true); });
+    item.layer.on('mouseout', function () { hover(item, false); });
+    item.layer.on('click', function () { select(item, false); });
+    // a label for every contour of the object: the first one is the main label
+    item.labels = (item.labels && item.labels.length ? item.labels : [item.center]).map(function (point, k) {
+      var span = el('span', null, item.short);
+      var cls = 'r2c-label' + (item.status === 'ok' ? '' : ' below') + (k ? ' minor' : '');
+      var marker = L.marker([point[0], point[1]], {
+        icon: L.divIcon({className: cls, html: span, iconSize: null}), interactive: false, keyboard: false
+      });
+      marker.r2c = {span: span, minor: k > 0, dy: item.status === 'ok' ? 0 : 17, item: item};
+      return marker;
+    });
+  });
+
+  function hover(item, on) {
+    if (item !== selected) setStrong(item, on);
+    if (item.li) item.li.classList.toggle('hover', on);
+  }
+  function select(item, zoom) {
+    if (selected && selected !== item) {
+      setStrong(selected, false);
+      if (selected.li) selected.li.classList.remove('active');
+    }
+    selected = item;
+    if (item.li) {
+      item.li.classList.add('active');
+      if (item.li.scrollIntoView) item.li.scrollIntoView({block: 'nearest'});
+    }
+    if (!item.layer) return;
+    setStrong(item, true);
+    if (zoom) map.fitBounds(boundsOf(item), {padding: [70, 70], maxZoom: 19, animate: false});
+    item.layer.openPopup([item.center[0], item.center[1]]);
+    layoutLabels();
+  }
+  map.on('popupclose', function (e) {
+    // opening the popup of another object closes the previous one - only react to the popup of the selected object
+    if (!selected || !selected.layer || e.popup !== selected.layer.getPopup()) return;
+    setStrong(selected, false);
+    if (selected.li) selected.li.classList.remove('active');
+    selected = null;
+  });
+
+  // Labels: keep those that do not overlap the labels placed before them.
+  function layoutLabels() {
+    if (!map.hasLayer(labelLayer)) return;
+    var placed = [], main = [], minor = [];
+    items.forEach(function (item) {
+      (item.labels || []).forEach(function (marker) {
+        if (!labelLayer.hasLayer(marker)) return;
+        if (marker.r2c.minor) minor.push(marker);
+        else if (item === selected) main.unshift(marker);
+        else main.push(marker);
+      });
+    });
+    // main labels in the order of the list (the selected object first), then the labels of the other contours
+    main.concat(minor).forEach(function (marker) {
+      var node = marker.getElement();
+      if (!node) return;
+      var info = marker.r2c;
+      var p = map.latLngToContainerPoint(marker.getLatLng());
+      if (!info.size) {
+        node.classList.remove('hidden');
+        info.size = [info.span.offsetWidth || info.span.textContent.length * 7.5, info.span.offsetHeight || 12];
+      }
+      var w = info.size[0] / 2 + 3, h = info.size[1] / 2 + 3, y = p.y + info.dy;
+      var box = [p.x - w, y - h, p.x + w, y + h];
+      var clash = placed.some(function (b) { return box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1]; });
+      node.classList.toggle('hidden', clash);
+      if (!clash) placed.push(box);
+    });
+  }
+  map.on('zoomend', layoutLabels);
+  map.on('overlayadd', layoutLabels);
+
+  // ---------------------------------------------------------------- side panel
+  document.getElementById('title').textContent = DATA.title;
+  document.title = DATA.title;
+  document.getElementById('subtitle').textContent = DATA.subtitle || '';
+  if (DATA.note) {
+    var note = document.getElementById('note');
+    note.textContent = DATA.note;
+    note.hidden = false;
+  }
+
+  var statusFilter = null;
+  var chips = document.getElementById('chips');
+  function chip(label, count, cls, status) {
+    var b = el('button', 'chip ' + (cls || ''));
+    b.type = 'button';
+    b.appendChild(el('b', null, String(count)));
+    b.appendChild(document.createTextNode(' ' + label));
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', function () {
+      statusFilter = (statusFilter === status) ? null : status;
+      Array.prototype.forEach.call(chips.children, function (c) { c.setAttribute('aria-pressed', 'false'); });
+      if (statusFilter !== null) b.setAttribute('aria-pressed', 'true');
+      applyFilter();
+    });
+    chips.appendChild(b);
+  }
+  chip('requested', items.length, '', null);
+  Object.keys(STATUS).forEach(function (status) {
+    var count = DATA.counts[status] || 0;
+    if (count || status === 'ok') chip(STATUS[status].one, count, STATUS[status].cls, status);
+  });
+
+  var withArea = items.filter(function (it) { return it.status === 'ok' && it.info.area; });
+  if (withArea.length) {
+    var sum = withArea.reduce(function (s, it) { return s + it.info.area; }, 0);
+    document.getElementById('total').textContent = 'Area by the register, objects with boundaries: ' + fmtArea(sum) +
+      (sum >= 10000 ? ' (' + fmtNumber(sum) + ' m²)' : '');
+  }
+
+  var groupsBox = document.getElementById('groups');
+  if ((DATA.groups || []).length > 1) {
+    DATA.groups.forEach(function (g) {
+      var b = el('button');
+      b.type = 'button';
+      b.title = 'Zoom to the objects of ' + g.id;
+      var sw = el('span', 'swatch'); sw.style.background = g.color;
+      b.appendChild(sw);
+      b.appendChild(document.createTextNode(g.id + ' (' + g.count + ')'));
+      b.addEventListener('click', function () {
+        fit(items.filter(function (it) { return it.group === g.id; }));
+      });
+      groupsBox.appendChild(b);
+    });
+  }
+
+  var list = document.getElementById('list');
+  items.forEach(function (item) {
+    var li = el('li');
+    var b = el('button');
+    b.type = 'button';
+    b.appendChild(el('span', 'num', item.n + '.'));
+    var body = el('span');
+    var row1 = el('span', 'row1');
+    var sw = el('span', 'swatch');
+    sw.style.background = item.layer ? item.color : 'transparent';
+    if (!item.layer) sw.style.borderStyle = 'dashed';
+    row1.appendChild(sw);
+    row1.appendChild(el('span', 'code', item.code));
+    var st = STATUS[item.status] || STATUS.error;
+    if (st.badge) row1.appendChild(el('span', 'badge ' + st.cls, st.badge));
+    var size = item.info.area ? fmtArea(item.info.area) : (item.length ? fmtLength(item.length) : '');
+    if (size) row1.appendChild(el('span', 'size', size));
+    body.appendChild(row1);
+    var meta = item.info.address || [item.info.kind || item.info.category, item.info.use].filter(Boolean).join(' · ');
+    if (meta) {
+      var metaNode = el('div', 'meta', meta);
+      metaNode.title = meta;
+      body.appendChild(metaNode);
+    }
+    if (item.message) body.appendChild(el('div', 'msg' + (item.status === 'error' ? '' : ' soft'), item.message));
+    b.appendChild(body);
+    li.appendChild(b);
+    if (!item.layer) li.classList.add('nogeo');
+    b.addEventListener('click', function () {
+      if (item.layer) select(item, true);
+      else toast('There are no boundaries to show for ' + item.code + (item.message ? ': ' + item.message : '.'), 6000);
+    });
+    b.addEventListener('mouseenter', function () { hover(item, true); });
+    b.addEventListener('mouseleave', function () { hover(item, false); });
+    item.li = li;
+    list.appendChild(li);
+  });
+
+  function visible(item) {
+    var text = document.getElementById('filter').value.trim().toLowerCase();
+    if (statusFilter !== null && item.status !== statusFilter) return false;
+    return !text || item.search.indexOf(text) !== -1;
+  }
+  function applyFilter() {
+    var shown = 0;
+    items.forEach(function (item) {
+      var on = visible(item);
+      item.li.style.display = on ? '' : 'none';
+      if (on) shown++;
+      if (!item.layer) return;
+      if (on) {
+        if (item.casing) casingLayer.addLayer(item.casing);
+        objectLayer.addLayer(item.layer);
+        item.labels.forEach(function (marker) { labelLayer.addLayer(marker); });
+      } else {
+        if (item.casing) casingLayer.removeLayer(item.casing);
+        objectLayer.removeLayer(item.layer);
+        item.labels.forEach(function (marker) { labelLayer.removeLayer(marker); });
+      }
+    });
+    document.getElementById('empty').style.display = shown ? 'none' : 'block';
+    layoutLabels();
+  }
+  document.getElementById('filter').addEventListener('input', applyFilter);
+
+  function fit(subset) {
+    var bounds = null;
+    (subset || items).forEach(function (item) {
+      if (!item.layer || !objectLayer.hasLayer(item.layer)) return;
+      var b = boundsOf(item);
+      bounds = bounds ? bounds.extend(b) : L.latLngBounds(b.getSouthWest(), b.getNorthEast());
+    });
+    if (bounds && bounds.isValid()) { map.fitBounds(bounds, {padding: [28, 28], maxZoom: 18, animate: false}); return true; }
+    return false;
+  }
+  document.getElementById('fit').addEventListener('click', function () { fit(); });
+
+  L.control.layers(baseLayers, {'Boundaries': objectLayer, 'Numbers': labelLayer}, {collapsed: true}).addTo(map);
+  map.on('overlayadd overlayremove', function (e) {
+    // the dark casing lines follow the "Boundaries" layer
+    if (e.layer !== objectLayer) return;
+    if (e.type === 'overlayadd') casingLayer.addTo(map);
+    else map.removeLayer(casingLayer);
+  });
+
+  applyFilter();
+  if (!fit()) {
+    map.setView([61, 95], 3);
+    var counts = DATA.counts, parts = [];
+    Object.keys(STATUS).forEach(function (status) {
+      if (status !== 'ok' && counts[status]) parts.push(counts[status] + ' ' + STATUS[status].one);
+    });
+    document.getElementById('nodata-text').textContent = 'No boundaries were received for ' +
+      (items.length === 1 ? 'the requested number' : 'any of the ' + items.length + ' requested numbers') +
+      (parts.length ? ' (' + parts.join(', ') + ')' : '') + '. The reason is given in the list.';
+    document.getElementById('nodata').style.display = 'block';
+  }
+  layoutLabels();
+  window.r2c = {map: map, items: items, data: DATA, select: select, fit: fit, layoutLabels: layoutLabels};
+})();
+</script>
+</body>
+</html>

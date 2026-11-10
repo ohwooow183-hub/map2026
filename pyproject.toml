@@ -1,6 +1,6 @@
 [project]
 name = "rosreestr2coord"
-version = "5.3.3"
+version = "5.3.3+map.1"
 description = "Get geometry from rosreestr"
 authors = [{ name = "Artemiy Doroshkov", email = "rendrom@gmail.com" }]
 dependencies = ["requests"]
@@ -16,6 +16,8 @@ readme = "README.md"
 rosreestr2coord = "rosreestr2coord.console:console"
 
 [project.optional-dependencies]
+# the picture (png) of the map, the interactive html map needs nothing
+png = ["matplotlib"]
 dev = [
     "ruff",
     "pytest",
@@ -25,6 +27,7 @@ dev = [
     "requests-mock",
     "build",
     "twine",
+    "matplotlib",
 ]
 
 [build-system]
@@ -34,6 +37,10 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 packages = ["rosreestr2coord", "rosreestr2coord.request"]
 include-package-data = true
+
+[tool.setuptools.package-data]
+# the page template of the map and the Leaflet library, which is built into the page
+rosreestr2coord = ["templates/*.html", "vendor/leaflet/*"]
 
 [tool.ruff]
 line-length = 120

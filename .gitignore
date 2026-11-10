@@ -16,6 +16,7 @@ venv/
 *.log
 *.json
 !/tests/catalog.json
+!/tests/data/*.json
 
 
 output/

@@ -49,8 +49,10 @@ def test_usage_handles_request_exception(monkeypatch):
 
 
 @pytest.mark.unit
-def test_usage_handles_to_kml_without_feature():
+def test_usage_handles_to_kml_without_feature(monkeypatch):
     """Catch NoCoordinatesException from .to_kml()"""
+    # a unit test must not call the real service: the Area simply gets no feature
+    monkeypatch.setattr("rosreestr2coord.parser.Area.get_geometry", lambda self: None)
     area = Area("75:09:000000", area_type=1, with_log=False)
     area.feature = None
 
